@@ -1,229 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Play With Friend</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tic Tac Toe - 3D Final Fix</title>
+    <link href="https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap" rel="stylesheet">
 
-<style>
-*{margin:0;padding:0;box-sizing:border-box;}
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body, html {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background: #f0e2d0 url("modelsa/duoplay.png") no-repeat center center;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1200px; 
+        }
 
-html,body{
-height:100%;
-font-family:Arial,sans-serif;
-background:url("modelsa/duoplay.png") no-repeat center center;
-background-size:cover;
-display:flex;
-justify-content:center;
-align-items:center;
-}
+        #back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            background: #ffd400;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            pointer-events: auto;
+        }
+        #back-btn:active { transform: scale(0.95); }
 
-/* LIQUID BACK BUTTON */
-#back-btn{
-position:fixed;
-top:20px;
-left:20px;
-padding:12px 26px;
-font-weight:bold;
-border:none;
-border-radius:40px;
-cursor:pointer;
-background:linear-gradient(145deg,#ffe44d,#ffd400);
-box-shadow:0 6px 18px rgba(0,0,0,.25);
-transition:.35s;
-}
+        #paper-layout {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            transform: rotateX(35deg) translateY(-2vh);
+            transform-style: preserve-3d;
+        }
 
-#back-btn:hover{
-transform:scale(1.08);
-box-shadow:
-0 0 25px rgba(255,212,0,.9),
-inset 0 0 15px rgba(255,255,255,.9);
-}
+        #scoreboard {
+            font-family: 'Arial', sans-serif;
+            font-size: 1.8vh;
+            color: #444;
+            margin-bottom: 5px;
+        }
 
-/* PANEL */
-#game-container{
-backdrop-filter:blur(6px);
-padding:40px 50px;
-border-radius:20px;
-display:flex;
-flex-direction:column;
-align-items:center;
-gap:18px;
-}
+        #message {
+            height: 4vh;
+            font-family: 'Indie Flower', cursive;
+            font-size: 3vh;
+            font-weight: bold;
+            color: #d63031;
+        }
 
-/* TITLE */
-#title{
-font-size:34px;
-font-weight:bold;
-color:#222;
-}
+        #board {
+            display: grid;
+            grid-template-columns: repeat(3, 15vh);
+            grid-template-rows: repeat(3, 15vh);
+            margin-bottom: 20px;
+        }
 
-#message{
-height:22px;
-font-size:18px;
-}
+        .cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Indie Flower', cursive;
+            font-size: 10vh;
+            cursor: pointer;
+            user-select: none;
+        }
 
-/* SCORE */
-#scoreboard{
-font-weight:bold;
-font-size:18px;
-color: #555;
-}
+        /* GRID LINES */
+        .cell:nth-child(3n-2), .cell:nth-child(3n-1) {
+            border-right: 0.6vh solid #4b4b4b;
+        }
+        .cell:nth-child(-n+6) {
+            border-bottom: 0.6vh solid #4b4b4b;
+        }
 
-/* PERSPECTIVE BOARD */
-#board{
-display:grid;
-grid-template-columns:repeat(3,100px);
-grid-template-rows:70px 100px 135px;
-transform:perspective(900px) rotateX(18deg);
-}
-
-/* CELLS */
-.cell{
-display:flex;
-justify-content:center;
-align-items:center;
-font-weight:bold;
-cursor:pointer;
-transition:.15s;
-}
-
-/* FONT SIZE BY ROW */
-.cell:nth-child(-n+3){ font-size:36px; }
-.cell:nth-child(n+4):nth-child(-n+6){ font-size:48px; }
-.cell:nth-child(n+7){ font-size:60px; }
-
-/* GRID LINES */
-.cell:nth-child(1),
-.cell:nth-child(2),
-.cell:nth-child(4),
-.cell:nth-child(5),
-.cell:nth-child(7),
-.cell:nth-child(8){
-border-right:4px solid #555;
-}
-
-.cell:nth-child(-n+6){
-border-bottom:4px solid #555;
-}
-
-/* ERASE BUTTON */
-#erase-btn{
-margin-top:18px;
-padding:12px 26px;
-font-weight:bold;
-border:none;
-border-radius:14px;
-cursor:pointer;
-background:#eee;
-box-shadow:0 6px 12px rgba(0,0,0,.2);
-transition:.25s;
-}
-
-#erase-btn:hover{
-transform:translateY(-2px);
-box-shadow:0 10px 18px rgba(0,0,0,.3);
-}
-</style>
+        /* ERASE BUTTON */
+        #erase-btn {
+            padding: 1.5vh 5vh;
+            font-size: 2vh;
+            font-weight: bold;
+            border: 2px solid #333;
+            border-radius: 8px;
+            background: #fff;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 2000;
+            transform: rotateX(-15deg);
+        }
+    </style>
 </head>
-
 <body>
 
-<button id="back-btn" onclick="history.back()">← Back</button>
+<button id="back-btn" onclick="window.location.href=document.referrer || '/'">← Back</button>
 
-<div id="game-container">
+<div id="paper-layout">
+    
+    <div id="scoreboard">
+        X: <span id="xS">0</span> | O: <span id="oS">0</span> | Tie: <span id="tS">0</span>
+    </div>
 
-<div id="message"></div>
+    <div id="message">X's Turn</div>
 
-<div id="scoreboard">
-X: <span id="xScore">0</span> |
-O: <span id="oScore">0</span> |
-Tie: <span id="tieScore">0</span>
-</div>
+    <div id="board">
+        <div class="cell" data-i="0"></div>
+        <div class="cell" data-i="1"></div>
+        <div class="cell" data-i="2"></div>
+        <div class="cell" data-i="3"></div>
+        <div class="cell" data-i="4"></div>
+        <div class="cell" data-i="5"></div>
+        <div class="cell" data-i="6"></div>
+        <div class="cell" data-i="7"></div>
+        <div class="cell" data-i="8"></div>
+    </div>
 
-<div id="board">
-<div class="cell" data-i="0"></div>
-<div class="cell" data-i="1"></div>
-<div class="cell" data-i="2"></div>
-<div class="cell" data-i="3"></div>
-<div class="cell" data-i="4"></div>
-<div class="cell" data-i="5"></div>
-<div class="cell" data-i="6"></div>
-<div class="cell" data-i="7"></div>
-<div class="cell" data-i="8"></div>
-</div>
-
-<button id="erase-btn">Erase</button>
-
+    <button id="erase-btn">Reset Game</button>
 </div>
 
 <script>
-const cells=document.querySelectorAll(".cell");
-const msg=document.getElementById("message");
+    const cells = document.querySelectorAll(".cell");
+    const msg = document.getElementById("message");
+    const xScore = document.getElementById("xS"), 
+          oScore = document.getElementById("oS"), 
+          tScore = document.getElementById("tS");
+    const eraseBtn = document.getElementById("erase-btn");
 
-let board=Array(9).fill(null);
-let turn="X";
-let gameOver=false;
+    let board = Array(9).fill(null);
+    let turn = "X";
+    let active = true;
+    let scores = { X: 0, O: 0, Tie: 0 };
 
-let x=0,o=0,tie=0;
+    const wins = [
+        [0,1,2], [3,4,5], [6,7,8], 
+        [0,3,6], [1,4,7], [2,5,8], 
+        [0,4,8], [2,4,6]           
+    ];
 
-const xScore=document.getElementById("xScore");
-const oScore=document.getElementById("oScore");
-const tieScore=document.getElementById("tieScore");
+    cells.forEach(cell => {
+        cell.addEventListener('click', () => {
+            const i = cell.dataset.i;
+            if (board[i] || !active) return;
 
-const wins=[
-[0,1,2],[3,4,5],[6,7,8],
-[0,3,6],[1,4,7],[2,5,8],
-[0,4,8],[2,4,6]
-];
+            board[i] = turn;
+            cell.textContent = turn;
+            cell.style.color = turn === "X" ? "#2d3436" : "#0984e3";
 
-function check(){
-for(let [a,b,c] of wins){
-if(board[a] && board[a]===board[b] && board[a]===board[c])
-return board[a];
-}
-if(board.every(v=>v)) return "Tie";
-return null;
-}
+            if (checkWin()) return;
+            if (checkTie()) return;
 
-cells.forEach(cell=>{
-cell.onclick=()=>{
-let i=cell.dataset.i;
-if(board[i]||gameOver) return;
+            turn = turn === "X" ? "O" : "X";
+            msg.textContent = turn + "'s Turn";
+        });
+    });
 
-board[i]=turn;
-cell.textContent=turn;
+    function checkWin() {
+        for (let condition of wins) {
+            const [a, b, c] = condition;
+            if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                msg.textContent = turn + " Wins!";
+                scores[turn]++;
+                updateScores();
+                active = false;
+                return true;
+            }
+        }
+        return false;
+    }
 
-let w=check();
+    function checkTie() {
+        if (!board.includes(null)) {
+            msg.textContent = "It's a Tie!";
+            scores.Tie++;
+            updateScores();
+            active = false;
+            return true;
+        }
+        return false;
+    }
 
-if(w){
-gameOver=true;
+    function updateScores() {
+        xScore.textContent = scores.X;
+        oScore.textContent = scores.O;
+        tScore.textContent = scores.Tie;
+    }
 
-if(w==="Tie"){ msg.textContent="Tie!"; tie++; }
-else{
-msg.textContent=w+" Wins!";
-if(w==="X") x++; else o++;
-}
-
-xScore.textContent=x;
-oScore.textContent=o;
-tieScore.textContent=tie;
-return;
-}
-
-turn = turn==="X" ? "O" : "X";
-msg.textContent=turn+"'s Turn";
-};
-});
-
-/* ERASE BOARD ONLY */
-document.getElementById("erase-btn").onclick=()=>{
-board.fill(null);
-cells.forEach(c=>c.textContent="");
-msg.textContent="";
-gameOver=false;
-turn="X";
-};
+    eraseBtn.addEventListener('click', () => {
+        board.fill(null);
+        cells.forEach(c => c.textContent = "");
+        msg.textContent = "X's Turn";
+        active = true;
+        turn = "X";
+    });
 </script>
-
 </body>
 </html>
