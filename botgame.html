@@ -2,10 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/128/57/57180.png">
 <title>Play with Bot</title>
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
+/* HIDE REAL MOUSE */
+*{margin:0;padding:0;box-sizing:border-box; cursor: none !important;}
 
 html,body{
   height:100%;
@@ -15,6 +17,49 @@ html,body{
   display:flex;
   justify-content:center;
   align-items:center;
+  overflow: hidden; /* Prevent scrollbars from custom cursor */
+}
+
+/* --- TIC TAC TOE CURSOR --- */
+#cursor-container {
+  position: fixed;
+  width: 30px;
+  height: 30px;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.1s ease-out;
+}
+
+.cursor-line {
+  position: absolute;
+  width: 30px;
+  height: 6px;
+  background-color: #ffc400; /* Yellow for X */
+  border-radius: 10px;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 0 10px #ffc400;
+}
+
+.line1 { transform: rotate(45deg); }
+.line2 { transform: rotate(-45deg); }
+
+/* ANIMATION: Transform X into O on Click */
+.cursor-active .line1 {
+  transform: rotate(0deg);
+  width: 25px;
+  height: 25px;
+  background-color: transparent;
+  border: 6px solid #ff0000; /* Red for O */
+  border-radius: 50%;
+  box-shadow: 0 0 15px #ff0000;
+}
+.cursor-active .line2 {
+  opacity: 0;
+  transform: rotate(0deg) scale(0);
 }
 
 /* BACK BUTTON */
@@ -29,8 +74,6 @@ color:#111;
 background:linear-gradient(145deg,#fff176,#ffd600);
 border:none;
 border-radius:2vmin;
-cursor:pointer;
-overflow:hidden;
 z-index:10;
 box-shadow:0 .4vmin .8vmin rgba(0,0,0,.25);
 transition:.35s;
@@ -56,7 +99,6 @@ transform:translateY(-2px) scale(1.05);
 box-shadow:0 .7vmin 1.5vmin rgba(0,0,0,.35);
 }
 
-
 /* MAIN PANEL */
 #game-container{
   background:rgba(10, 106, 10, 0.596);
@@ -68,7 +110,8 @@ box-shadow:0 .7vmin 1.5vmin rgba(0,0,0,.35);
   margin-bottom: 48vmin;
   margin-top: 24vmin;
   margin-left: 20vmin;
-  margin-right: 23vmin
+  margin-right: 23vmin;
+  z-index: 5;
 }
 
 /* LEFT PANEL */
@@ -111,14 +154,11 @@ box-shadow:0 .7vmin 1.5vmin rgba(0,0,0,.35);
   height:8vmin;
   background:rgba(255,255,255,0.1);
   border-radius:1vmin;
-
   display:flex;
   justify-content:center;
   align-items:center;
-
   font-size:4vmin;
   color:yellow;
-  cursor:pointer;
   user-select:none;
   transition:.25s;
 }
@@ -145,26 +185,19 @@ box-shadow:0 .7vmin 1.5vmin rgba(0,0,0,.35);
   font-size:2vmin;
   font-weight:bold;
   color:rgb(255, 255, 255);
-
   background:linear-gradient(120deg,#ffe600,#ffd000,#fff066);
   border:none;
   border-radius:0.9vmin;
-  cursor:pointer;
-
   box-shadow:0 0 1.5vmin #ffc400;
-
   position:relative;
   overflow:hidden;
-
   transition:transform .25s ease, box-shadow .35s ease;
 }
 
-/* holographic */
 #reset-btn::before{
   content:"";
   position:absolute;
   inset:-40%;
-
   background:linear-gradient(
     120deg,
     transparent 20%,
@@ -193,34 +226,33 @@ box-shadow:0 .7vmin 1.5vmin rgba(0,0,0,.35);
   transform:scale(.96);
 }
 
-/* SCOREBOARD */
 #scoreboard{
   margin-top:1.2vmin;
   font-size:2.3vmin;
   color:yellow;
   font-weight:bold;
 }
-
-
 </style>
 </head>
 
 <body>
 
+<div id="cursor-container">
+  <div class="cursor-line line1"></div>
+  <div class="cursor-line line2"></div>
+</div>
+
 <button id="back-btn" onclick="history.back()">← Back</button>
 
 <div id="game-container">
-
   <div id="left-panel">
     <div id="title">Play with Bot</div>
     <div id="message"></div>
-
     <div id="scoreboard">
-You: <span id="youScore">0</span> |
-Bot: <span id="botScore">0</span> |
-Tie: <span id="tieScore">0</span>
-</div>
-
+      You: <span id="youScore">0</span> |
+      Bot: <span id="botScore">0</span> |
+      Tie: <span id="tieScore">0</span>
+    </div>
     <button id="reset-btn">Reset</button>
   </div>
 
@@ -235,10 +267,31 @@ Tie: <span id="tieScore">0</span>
     <div class="cell" data-index="7"></div>
     <div class="cell" data-index="8"></div>
   </div>
-
 </div>
 
+<audio id="click-sound" src="modelsa/click.mp3" preload="auto"></audio>
+
 <script>
+const cursor = document.getElementById('cursor-container');
+const clickSound = document.getElementById('click-sound');
+
+// --- CURSOR MOVEMENT LOGIC ---
+document.addEventListener('mousemove', (e) => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top = e.clientY + 'px';
+});
+
+// --- GLOBAL CLICK SOUND & CURSOR ANIMATION ---
+window.addEventListener('mousedown', () => {
+  cursor.classList.add('cursor-active');
+  clickSound.currentTime = 0;
+  clickSound.play().catch(()=>{});
+});
+window.addEventListener('mouseup', () => {
+  cursor.classList.remove('cursor-active');
+});
+
+// --- YOUR ORIGINAL GAME LOGIC ---
 const board=Array(9).fill(null);
 const cells=document.querySelectorAll('.cell');
 const message=document.getElementById('message');
@@ -360,7 +413,6 @@ function updateScore(){
   botScore.textContent=bot;
   tieScore.textContent=tie;
 }
-
 </script>
 
 </body>
